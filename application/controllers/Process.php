@@ -30,6 +30,8 @@ class Process extends CI_Controller
 
 	protected function _sameThingForExample(string $method, string $letters, string $when): void
 	{
+		$start = date('H:i:s');
+
 		$this->load->library('forker_response');
 
 		$sleep = mt_rand(2, 5);
@@ -43,6 +45,6 @@ class Process extends CI_Controller
 		/* simulate work */
 		sleep($sleep);
 
-		$this->forker_response->response('<p>We slept for ' . $sleep . ' seconds.' . PHP_EOL . trim($output) . '</p>');
+		$this->forker_response->response('We slept for ' . $sleep . ' seconds. From ' . $start . ' to ' . date('H:i:s'));
 	}
 }

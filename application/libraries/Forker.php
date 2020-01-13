@@ -54,12 +54,12 @@ class Forker
 		/* unique process id */
 		$id = \sha1(\uniqid('', true));
 
-		$processId = $this->parentProcessId . '-' . $id;
+		$options['processId'] = $this->parentProcessId . '-' . $id;
 
-		$this->running[$id] = [$processId, $closure, $options];
+		$this->running[$id] = [$options['processId'], $closure, $options];
 
 		/* fork using shell do not wait for a responds */
-		$forkCli = 'export CIFORKERPID="' . $processId . '";' . $this->exec . ' ' . $endpoint . ' > /dev/null 2>&1 &';
+		$forkCli = 'export CIFORKERPID="' . $options['processId'] . '";' . $this->exec . ' ' . $endpoint . ' > /dev/null 2>&1 &';
 
 		#echo $forkCli . PHP_EOL;
 
