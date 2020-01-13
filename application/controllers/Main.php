@@ -5,8 +5,6 @@ class Main extends CI_Controller
 
 	public function index()
 	{
-		$this->load->library(['stream', 'forker']);
-
 		/* stream directly out - flushing output instead of buffering it */
 		$this->stream->send($this->load->view('template.html', ['start' => 'Start Controller ' . date('H:i:s')], true));
 
@@ -30,15 +28,12 @@ class Main extends CI_Controller
 
 	public function cli()
 	{
-		$this->load->library('forker');
-
 		echo 'Start Controller ' . date('H:i:s') . PHP_EOL;
 
-		$this->forker->responseHandler(function (string $output, array $options = []) {
-			echo $output . PHP_EOL;
-		});
-
 		$this->forker
+			->responseHandler(function (string $output) {
+				echo $output . PHP_EOL;
+			})
 			->add('/process/endpoint1/abc/1st')
 			->add('/process/endpoint2/def/2nd')
 			->add('/process/endpoint3/ghi/3rd')

@@ -12,6 +12,8 @@ class Forker
 	protected $running = []; /* running processes */
 	protected $responseHandler;
 
+	public $response;
+
 	public function __construct(array $config = null)
 	{
 		if (!$config) {
@@ -19,6 +21,8 @@ class Forker
 
 			$config = get_instance()->config->item('forker');
 		}
+
+		require __DIR__ . '/Forker_response.php';
 
 		$this->phpbin = $config['php bin'] ?? '/usr/bin/php';
 		$this->bootstrapFile = $config['bootstrap file'] ?? '/index.php';
@@ -29,8 +33,10 @@ class Forker
 
 		$this->workingFolder = \rtrim($root, '/') . '/' . \trim($workingFolder, '/') . '/';
 
+		$this->response = new Forker_response($this->workingFolder, $config['auto capture'] || true);
+
 		/* create unique page/process id */
-		$this->parentProcessId = \sha1(uniqid('', true));
+		$this->parentProcessId = \md5(uniqid('', true));
 
 		$this->exec = \trim($this->phpbin) . ' ' . \rtrim($root, '/') . '/' . \trim($this->bootstrapFile, '/');
 
@@ -52,18 +58,12 @@ class Forker
 		$closure = $closure ?? $this->responseHandler;
 
 		/* unique process id */
-		$id = \sha1(\uniqid('', true));
+		$options['processId'] = $this->parentProcessId . '-' . \md5(\uniqid('', true));
 
-		$options['processId'] = $this->parentProcessId . '-' . $id;
+		$this->running[] = [$options['processId'], $closure, $options];
 
-		$this->running[$id] = [$options['processId'], $closure, $options];
-
-		/* fork using shell do not wait for a responds */
-		$forkCli = 'export CIFORKERPID="' . $options['processId'] . '";' . $this->exec . ' ' . $endpoint . ' > /dev/null 2>&1 &';
-
-		#echo $forkCli . PHP_EOL;
-
-		\shell_exec($forkCli);
+		/* fork using shell do not wait for a responds set up CIFORKERPID for the response */
+		\shell_exec('export CIFORKERPID="' . $options['processId'] . '";' . $this->exec . ' ' . $endpoint . ' > /dev/null 2>&1 &');
 
 		return $this;
 	}
@@ -74,11 +74,11 @@ class Forker
 
 		/* wait for all of those files - with safety */
 		while (\count($this->running) > 0 && \time() < $whileEnd) {
-			foreach ($this->running as $id => $process) {
+			foreach ($this->running as $key => $process) {
 				/* is the process output file there yet? */
 				if (\file_exists($this->workingFolder . $process[0])) {
 					/* remove from checking */
-					unset($this->running[$id]);
+					unset($this->running[$key]);
 
 					/* capture the process output */
 					$response = \file_get_contents($this->workingFolder . $process[0]);

@@ -5,20 +5,10 @@ class Forker_response
 	protected $workingFolder;
 	protected $capture = false;
 
-	public function __construct(array $config = null)
+	public function __construct(string $workingFolder, bool $autoCapture)
 	{
-		if (!$config) {
-			get_instance()->config->load('forker', true);
-
-			$config = get_instance()->config->item('forker');
-		}
-
-		$root = $config['root'] ?? \dirname(\dirname(__DIR__));;
-		$workingFolder = $config['working folder'] ?? '/var/fork_output/';
-
-		$this->workingFolder = \rtrim($root, '/') . '/' . \trim($workingFolder, '/') . '/';
-
-		$this->capture = $config['auto capture'] || true;
+		$this->workingFolder = $workingFolder;
+		$this->capture = $autoCapture;
 
 		if ($this->capture) {
 			$this->capture();
@@ -32,7 +22,7 @@ class Forker_response
 		return ob_start();
 	}
 
-	public function response(string $output = '', string $outputFile = null): int
+	public function send(string $output = '', string $outputFile = null): int
 	{
 		if ($this->capture) {
 			/* Return the contents of the output buffer */

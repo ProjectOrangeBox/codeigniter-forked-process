@@ -32,19 +32,11 @@ class Process extends CI_Controller
 	{
 		$start = date('H:i:s');
 
-		$this->load->library('forker_response');
-
 		$sleep = mt_rand(2, 5);
-
-		$output = $method . PHP_EOL . $letters . ' ';
-
-		for ($x = 0; $x <= $sleep; $x++) {
-			$output .= $when . ' ';
-		}
 
 		/* simulate work */
 		sleep($sleep);
 
-		$this->forker_response->response('We slept for ' . $sleep . ' seconds. From ' . $start . ' to ' . date('H:i:s'));
+		$this->forker->response->send('We slept for ' . $sleep . ' seconds. From ' . $start . ' to ' . date('H:i:s'));
 	}
 }
