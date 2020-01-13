@@ -5,14 +5,16 @@ class Main extends CI_Controller
 
 	public function index()
 	{
-		$this->load->library('forker');
+		$this->load->library(['stream', 'forker']);
 
-		get_instance()->output->append_output('<p class="e">Start Controller ' . date('H:i:s') . '</p>');
+		/* use output's append_output to immediately send (flush) output instead of buffering it */
 
-		get_instance()->output->append_output($this->load->view('template.html', [], true));
+		get_instance()->stream
+			->send('<p class="e">Start Controller ' . date('H:i:s') . '</p>')
+			->send($this->load->view('template.html', [], true));
 
 		$this->forker->responseHandler(function (string $output, array $options = []) {
-			get_instance()->output->inject($options['div'], $output);
+			get_instance()->stream->send($options['div'], $output);
 		});
 
 		$this->forker
@@ -27,7 +29,7 @@ class Main extends CI_Controller
 			->add('/process/endpoint4/yz/9th', null, ['div' => 'div9'])
 			->wait();
 
-		get_instance()->output->append_output('<p class="e">End Controller ' . date('H:i:s') . '</p>');
+		get_instance()->stream->send('<p class="e">End Controller ' . date('H:i:s') . '</p>');
 	}
 
 	public function cli()
