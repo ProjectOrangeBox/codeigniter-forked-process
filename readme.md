@@ -15,9 +15,54 @@ Since this is using Streaming each piece of output is sent to the screen as soon
 
 ***So we are doing 18-45 seconds worth of work in 2-5 seconds!***
 
-```
-$this->load->library(['stream', 'forker']);
 
+```
+./serve.sh
+```
+
+[http://localhost:8080/
+](http://localhost:8080/)
+
+
+* application/config/forker.php - config file
+
+```
+$config['root'] - application root folder (dirname(dirname(__DIR__)))
+$config['maximum wait'] - maximum number of seconds to wait for all processes (20)
+$config['working folder'] - read/write working folder (some place in var usually /var/fork_output/)
+$config['php bin'] - location of PHP bin for basic forking (/usr/bin/php)
+$config['bootstrap file'] - based on applicaton root where is index.php? (include index.php) (/index.php)
+$config['auto capture'] - turn on output capture automatically in the process handler (true)
+```
+	
+	
+* controllers/Main.php - example controller
+* controllers/Process.php - examples "working" processes
+
+* libraries/Forker.php - Process Forker
+
+```
+$forker->add('/endpoint/foo/bar',function ($output,$options) {
+	echo $output.PHP_EOL;
+},['option1'=>true]);
+$forker->wait();
+$forker->responseHandler(function ($output,$options) {
+	echo $output.PHP_EOL;
+});
+$forker->response->capture();
+$forker->response->send('Welcome Home');
+```
+
+* libraries/Stream.php - Output Streamer
+
+```
+$stream->send('id','<i>Hello World</i>');
+$stream->send('<b>Welcome</b> Home');
+```
+
+Controller Example
+
+```
 /* stream directly out - flushing output instead of buffering it */
 $this->stream->send($this->load->view('template.html', ['start' => 'Start Controller ' . date('H:i:s')], true));
 
@@ -39,10 +84,3 @@ $this->forker
 
 $this->stream->send('endController', 'End Controller ' . date('H:i:s'));
 ```
-
-```
-./serve.sh
-```
-
-[http://localhost:8080/
-](http://localhost:8080/)
