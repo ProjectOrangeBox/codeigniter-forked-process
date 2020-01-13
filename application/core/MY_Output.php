@@ -5,6 +5,7 @@ class MY_Output extends CI_Output
 	protected $headerSent = false;
 	protected $inject = [];
 	protected $functionName = '_i';
+	protected $injectorSent = false;
 
 	public function __construct()
 	{
@@ -17,6 +18,8 @@ class MY_Output extends CI_Output
 	/* override parent */
 	public function append_output($output)
 	{
+		$this->injector();
+
 		$this->echo($output);
 
 		return $this;
@@ -25,6 +28,8 @@ class MY_Output extends CI_Output
 	/* override parent */
 	public function _display($output = '')
 	{
+		$this->injector();
+
 		$this->echo($output);
 
 		foreach ($this->inject as $name => $output) {
@@ -49,6 +54,8 @@ class MY_Output extends CI_Output
 			parent::_display('');
 		}
 
+		$this->injector();
+
 		/* Output String */
 		echo $output;
 
@@ -65,15 +72,17 @@ class MY_Output extends CI_Output
 	 * @param mixed bool
 	 * @return void
 	 */
-	public function injector(bool $send = true): string
+	public function injector(): MY_Output
 	{
-		$injector = '<script>function ' . $this->functionName . '(i,c){let e=document.getElementById(i);if(e){e.outerHTML=c}}</script>';
+		if (!$this->injectorSent) {
+			$this->injectorSent = true;
 
-		if (!$send) {
-			$this->echo($injector);
+			if (!is_cli()) {
+				echo '<script>function ' . $this->functionName . '(i,c){let e=document.getElementById(i);if(e){e.outerHTML=c}}</script>';
+			}
 		}
 
-		return $injector;
+		return $this;
 	}
 
 	/**
