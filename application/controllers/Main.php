@@ -7,17 +7,13 @@ class Main extends CI_Controller
 	{
 		$this->load->library(['stream', 'forker']);
 
-		/* use output's append_output to immediately send (flush) output instead of buffering it */
-
-		get_instance()->stream
-			->send('<p class="e">Start Controller ' . date('H:i:s') . '</p>')
-			->send($this->load->view('template.html', [], true));
-
-		$this->forker->responseHandler(function (string $output, array $options = []) {
-			get_instance()->stream->send($options['div'], $output);
-		});
+		/* stream directly out - flushing output instead of buffering it */
+		$this->stream->send($this->load->view('template.html', ['start' => 'Start Controller ' . date('H:i:s')], true));
 
 		$this->forker
+			->responseHandler(function (string $output, array $options = []) {
+				get_instance()->stream->send($options['div'], $output);
+			})
 			->add('/process/endpoint1/abc/1st', null, ['div' => 'div1'])
 			->add('/process/endpoint2/def/2nd', null, ['div' => 'div2'])
 			->add('/process/endpoint3/ghi/3rd', null, ['div' => 'div3'])
@@ -27,9 +23,9 @@ class Main extends CI_Controller
 			->add('/process/endpoint2/stu/7th', null, ['div' => 'div7'])
 			->add('/process/endpoint3/vwx/8th', null, ['div' => 'div8'])
 			->add('/process/endpoint4/yz/9th', null, ['div' => 'div9'])
-			->wait();
+			->wait(); /* now we need to wait for everything to get done or the timeout */
 
-		get_instance()->stream->send('<p class="e">End Controller ' . date('H:i:s') . '</p>');
+		$this->stream->send('endController', 'End Controller ' . date('H:i:s'));
 	}
 
 	public function cli()
