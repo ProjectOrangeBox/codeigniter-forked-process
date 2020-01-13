@@ -11,7 +11,9 @@ We than wait for each of these to complete (with timeout).
 
 Finally send a Controller Finished Messesage which again should take no longer than 5 seconds to complete (not the combined time of all sub-processors).
 
-Since this is using Streaming each piece of output is sent to the screen as soon as it's available. This makes out time to first byte microseonds instead of 5 seconds or even 45 seconds!
+Since this is using Streaming each piece of output is sent to the screen as soon as it's available. This makes our  time to first byte microseonds instead of 5 seconds or even 45 seconds for the entire page to render!
+
+***So we are doing 18-45 seconds worth of work in 2-5 seconds!***
 
 ```
 $this->load->library(['stream', 'forker']);
